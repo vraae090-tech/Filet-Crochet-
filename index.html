@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filet Crochet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- reveal mode top bar -->
+    <div id="reveal-bar" class="topbar">
+        <div class="topbar-title">Filet Crochet</div>
+        <span class="topbar-divider"></span>
+        <span class="topbar-hint">hover to reveal</span>
+        <span class="topbar-divider"></span>
+        <button id="swap-color-btn" class="topbar-btn">Swap Color</button>
+        <button id="reveal-reset-btn" class="topbar-btn">Reset</button>
+        <button id="reveal-print-btn" class="topbar-btn">Print</button>
+        <button id="mode-btn-top" class="topbar-btn">Make Your Own</button>
+    </div>
+
+    <!-- the grid (table element!) -->
+    <table id="grid"></table>
+
+    <!-- create mode top bar -->
+    <div id="create-bar" class="topbar hidden">
+        <div class="topbar-title">Filet Crochet Pattern Making</div>
+        <span class="topbar-divider"></span>
+        <div class="topbar-section">
+            <span class="topbar-label">color</span>
+            <div class="palette">
+                <button class="color-btn active" data-color="#ADD8E6" style="background:#ADD8E6;"></button>
+                <button class="color-btn" data-color="#009292" style="background:#009292;"></button>
+                <button class="color-btn" data-color="#CC5500" style="background:#CC5500;"></button>
+                <button class="color-btn eraser-btn" data-color="erase">&#x2715;</button>
+            </div>
+        </div>
+        <span class="topbar-divider"></span>
+        <button id="reset-btn" class="topbar-btn">Reset</button>
+        <button id="create-print-btn" class="topbar-btn">Print</button>
+        <button id="back-btn" class="topbar-btn">Back to Pattern</button>
+    </div>
+
+    <script>
+        // sardine tin pattern - 55 columns wide
+        // each row is a string of 0s and 1s
+        // 1 = filled square, 0 = empty
+        var pattern = [
+            // padding so grid starts behind toolbar
+            "0000000000000000000000000000000000000000000000000000000",
+            "0000000000000000000000000000000000000000000000000000000",
+            "0000000000000000000000000000000000000000000000000000000",
+            "0000000000000000000000000000000000000000000000000000000",
+            // outer border of tin
+            "0001111111111111111111111111111111111111111111111111000",
+            "0011111111111111111111111111111111111111111111111111100",
+            "0011000000000000000000000000000000000000000000000011100",
+            "0011000000000000000000000000000000000000000000000011100",
+            // pull tab
+            "0011000000000000000001111111111000000000000000000011100",
+            "0011000000000000000011111111111100000000000000000011100",
+            "0011000000000000000111100000011110000000000000000011100",
+            "0011000000000000000111000000001110000000000000000011100",
+            "0011000000000000000011100000011100000000000000000011100",
+            "0011000000000000000001111111111000000000000000000011100",
+            "0011000000000000000000111111110000000000000000000011100",
+            "0011000000000000000000000000000000000000000000000011100",
+            // SARDINES text in pixel letters
+            "0011000111001110011100111001100011100111001110011011100",
+            "0011001000010001010001000101100100010100001000010011100",
+            "0011001000010001010001000101100100010100001000010011100",
+            "0011000111011111011100100001100110010111001110011011100",
+            "0011000001010001011000100001100101010100001000010011100",
+            "0011000001010001010100100001100100110100001000010011100",
+            "0011001110010001010010111001100100010111001110011011100",
+            "0011000000000000000000000000000000000000000000000011100",
+            // tin body top
+            "0011000111111111111111111111111111111111111111000011100",
+            "0011001111111111111111111111111111111111111111100011100",
+            "0011011111111111111111111111111111111111111111110011100",
+            "0011011111111111111111111111111111111111111111110011100",
+            // tin walls
+            "0011011111000000000000000000000000000000000111110011100",
+            "0011011110000000000000000000000000000000000011110011100",
+            // 3 sardines - heads at top, tails at bottom
+            // fish heads with eyes
+            "0011011110000001100000000110000000011000000011110011100",
+            "0011011110000011110000001111000000111100000011110011100",
+            "0011011110000111111000011111100001111110000011110011100",
+            "0011011110000111111000011111100001111110000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001101111100110111110011011111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            // gill line
+            "0011011110000000000000000000000000000000000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            // body with stripes
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001110111100111011110011101111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001110111100111011110011101111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001110111100111011110011101111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001110111100111011110011101111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110001111111100111111110011111111000011110011100",
+            // body tapers down
+            "0011011110001111111100111111110011111111000011110011100",
+            "0011011110000111111000011111100001111110000011110011100",
+            "0011011110000111111000011111100001111110000011110011100",
+            "0011011110000011110000001111000000111100000011110011100",
+            "0011011110000011110000001111000000111100000011110011100",
+            "0011011110000001100000000110000000011000000011110011100",
+            // tail fork
+            "0011011110000010010000001001000000100100000011110011100",
+            "0011011110000100001000010000100001000010000011110011100",
+            "0011011110001000000100100000010010000001000011110011100",
+            // bottom space
+            "0011011110000000000000000000000000000000000011110011100",
+            "0011011110000000000000000000000000000000000011110011100",
+            "0011011111000000000000000000000000000000000111110011100",
+            "0011011111111111111111111111111111111111111111110011100",
+            "0011011111111111111111111111111111111111111111110011100",
+            "0011001111111111111111111111111111111111111111100011100",
+            "0011000111111111111111111111111111111111111111000011100",
+            // bottom border
+            "0011000000000000000000000000000000000000000000000011100",
+            "0011000000000000000000000000000000000000000000000011100",
+            "0011111111111111111111111111111111111111111111111111100",
+            "0001111111111111111111111111111111111111111111111111000",
+            // bottom padding
+            "0000000000000000000000000000000000000000000000000000000",
+            "0000000000000000000000000000000000000000000000000000000",
+        ];
+
+        var COLS = pattern[0].length;
+        var ROWS = pattern.length;
+
+        // all the colors you can swap between
+        var colors = ['#ADD8E6', '#009292', '#CC5500', '#FFB347'];
+        var currentColor = colors[0];
+
+        // state stuff
+        var mode = 'reveal';
+        var activeColor = '#ADD8E6';
+        var mouseDown = false;
+
+        // grab elements
+        var grid = document.getElementById('grid');
+        var revealBar = document.getElementById('reveal-bar');
+        var createBar = document.getElementById('create-bar');
+        var modeBtnTop = document.getElementById('mode-btn-top');
+        var revealResetBtn = document.getElementById('reveal-reset-btn');
+        var swapColorBtn = document.getElementById('swap-color-btn');
+        var resetBtn = document.getElementById('reset-btn');
+        var backBtn = document.getElementById('back-btn');
+
+        // builds the reveal grid - all blank, hover to show
+        function buildRevealGrid() {
+            grid.innerHTML = '';
+            for (var r = 0; r < ROWS; r++) {
+                var tr = document.createElement('tr');
+                for (var c = 0; c < COLS; c++) {
+                    var td = document.createElement('td');
+                    td.dataset.row = r;
+                    td.dataset.col = c;
+                    if (pattern[r][c] === '1') {
+                        td.classList.add('pattern-cell');
+                    }
+                    tr.appendChild(td);
+                }
+                grid.appendChild(tr);
+            }
+        }
+
+        // builds empty grid for drawing mode
+        function buildCreateGrid() {
+            grid.innerHTML = '';
+            for (var r = 0; r < ROWS; r++) {
+                var tr = document.createElement('tr');
+                for (var c = 0; c < COLS; c++) {
+                    var td = document.createElement('td');
+                    td.dataset.row = r;
+                    td.dataset.col = c;
+                    tr.appendChild(td);
+                }
+                grid.appendChild(tr);
+            }
+        }
+
+        buildRevealGrid();
+
+        // hover reveal with big brush
+        var brushSize = 3;
+
+        grid.addEventListener('mouseover', function(e) {
+            if (mode !== 'reveal') return;
+            var td = e.target;
+            if (td.tagName !== 'TD') return;
+
+            var row = parseInt(td.dataset.row);
+            var col = parseInt(td.dataset.col);
+            var allRows = grid.rows;
+
+            // paint in a circle around cursor
+            for (var dr = -brushSize; dr <= brushSize; dr++) {
+                for (var dc = -brushSize; dc <= brushSize; dc++) {
+                    if (dr * dr + dc * dc > brushSize * brushSize + 1) continue;
+                    var r = row + dr;
+                    var c = col + dc;
+                    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+                    var cell = allRows[r].cells[c];
+                    if (cell.classList.contains('pattern-cell') && !cell.classList.contains('revealed')) {
+                        cell.style.backgroundColor = currentColor;
+                        cell.classList.add('revealed');
+                    }
+                }
+            }
+        });
+
+        // create mode - click and drag to paint
+        grid.addEventListener('mousedown', function(e) {
+            if (mode !== 'create') return;
+            e.preventDefault();
+            mouseDown = true;
+            paintCell(e.target);
+        });
+
+        grid.addEventListener('mouseover', function(e) {
+            if (mode !== 'create' || !mouseDown) return;
+            paintCell(e.target);
+        });
+
+        document.addEventListener('mouseup', function() {
+            mouseDown = false;
+        });
+
+        function paintCell(td) {
+            if (td.tagName !== 'TD') return;
+            if (activeColor === 'erase') {
+                td.style.backgroundColor = '';
+                td.classList.remove('user-filled');
+            } else {
+                td.style.backgroundColor = activeColor;
+                td.classList.add('user-filled');
+            }
+        }
+
+        // switching between modes
+        function goCreate() {
+            mode = 'create';
+            revealBar.classList.add('hidden');
+            createBar.classList.remove('hidden');
+            document.body.style.backgroundColor = '#ffffff';
+            buildCreateGrid();
+        }
+
+        function goReveal() {
+            mode = 'reveal';
+            revealBar.classList.remove('hidden');
+            createBar.classList.add('hidden');
+            buildRevealGrid();
+        }
+
+        modeBtnTop.addEventListener('click', goCreate);
+        backBtn.addEventListener('click', goReveal);
+
+        // print buttons
+        document.getElementById('reveal-print-btn').addEventListener('click', function() {
+            window.print();
+        });
+        document.getElementById('create-print-btn').addEventListener('click', function() {
+            window.print();
+        });
+
+        // reset button - clears revealed cells
+        revealResetBtn.addEventListener('click', function() {
+            buildRevealGrid();
+        });
+
+        // swap color - picks a random different color
+        swapColorBtn.addEventListener('click', function() {
+            var options = colors.filter(function(c) { return c !== currentColor; });
+            currentColor = options[Math.floor(Math.random() * options.length)];
+            // update all the revealed cells to new color
+            grid.querySelectorAll('td.revealed').forEach(function(td) {
+                td.style.backgroundColor = currentColor;
+            });
+        });
+
+        // reset for create mode
+        resetBtn.addEventListener('click', function() {
+            grid.querySelectorAll('td').forEach(function(td) {
+                td.style.backgroundColor = '';
+                td.classList.remove('user-filled');
+            });
+        });
+
+        // color palette buttons (create mode)
+        var colorBtns = document.querySelectorAll('.color-btn');
+        colorBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                colorBtns.forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                activeColor = btn.dataset.color;
+            });
+        });
+    </script>
+
+</body>
+</html>
